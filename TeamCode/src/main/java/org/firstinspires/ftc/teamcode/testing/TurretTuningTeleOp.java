@@ -1,96 +1,91 @@
 package org.firstinspires.ftc.teamcode.testing;
 
+import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.shooterConstants.LimelightVision;
 import org.firstinspires.ftc.teamcode.shooterConstants.TurretLockSystem;
+import org.firstinspires.ftc.teamcode.shooterConstants.fusedLocalizer;
 
 /**
- * TurretTuningTeleOp
+ * TurretTuningTeleOp (Version 3 - Cleaned)
  * <p>
- * This TeleOp is designed for testing and tuning the TurretLockSystem.
- * It uses the specific hardware and localization setup defined in your
- * Constants.java file.
+ * This TeleOp is for testing the TurretLockSystem.
  * <p>
  * CONTROLS:
- * - Left Stick: Drive (forward/backward/strafe)
- * - Right Stick: Turn
- * - Gamepad 1 'A': Toggle turret lock on/off
+ * - Gamepad 1 Left Stick: Drive (forward/backward/strafe)
+ * - Gamepad 1 Right Stick: Turn
+ * - Gamepad 1 'A' (HOLD): Lock the turret onto the target.
+ * - Gamepad 1 'A' (RELEASE): Return turret to zero.
  */
 @TeleOp(name = "Turret Tuning TeleOp", group = "Testing")
 public class TurretTuningTeleOp extends LinearOpMode {
 
-    private Follower follower;
-    private DcMotorEx turretMotor;
-    private TurretLockSystem turretLockSystem;
-
     @Override
     public void runOpMode() throws InterruptedException {
-        // ==================== INITIALIZATION ====================
 
-        // Initialize the drive base and localizer using your Constants.java helper
-        follower = Constants.createFollower(hardwareMap, telemetry);
+        // ==================== 1. INITIALIZE LOCALIZER ====================
+        // This is your custom localizer that fuses odometry and vision.
+        // It's the brain that tells the robot where it is.
+        fusedLocalizer robotLocalizer = new fusedLocalizer(
+                new PinpointLocalizer(hardwareMap, Constants.localizerConstants),
+                new LimelightVision(hardwareMap),
+                telemetry
+        );
 
-        // Get the turret motor from the hardware map.
-        // RENAME "turretMotor" if your configuration is different.
-        turretMotor = hardwareMap.get(DcMotorEx.class, "turretMotor");
+        // ==================== 2. INITIALIZE DRIVETRAIN ====================
+        // The Follower handles the robot's movement. We give it the localizer
+        // so it knows where it is while driving.
+        Follower follower = new FollowerBuilder(Constants.followerConstants, hardwareMap)
+                .setLocalizer(robotLocalizer)
+                .pathConstraints(Constants.pathConstraints)
+                .mecanumDrivetrain(Constants.driveConstants)
+                .build();
 
-        // Create the Turret Lock System, giving it the localizer from the follower
-        turretLockSystem = new TurretLockSystem(
-                follower.getLocalizer(), // Use the localizer from your follower
+        // ==================== 3. INITIALIZE TURRET HARDWARE ====================
+        DcMotorEx turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
+        turretMotor.setDirection(DcMotorSimple.Direction.FORWARD); // IMPORTANT: Change to REVERSE if it turns the wrong way.
+
+        // ==================== 4. INITIALIZE TURRET LOCK SYSTEM ====================
+        // This is our new system. We give it the same localizer so it can calculate
+        // the angle to the target based on the robot's position.
+        TurretLockSystem turretLockSystem = new TurretLockSystem(
+                robotLocalizer, // Use the same localizer as the drivetrain
                 turretMotor,
                 telemetry
         );
 
-        // You can set a custom target position here if needed.
-        // The default is (15.0, 135.0) from TurretLockSystem.java
-        // turretLockSystem.setTargetPosition(36, 72);
-
-        // Gamepad effect for feedback
-        Gamepad.RumbleEffect rumbleEffect = new Gamepad.RumbleEffect.Builder()
-                .addStep(0.5, 0.5, 200)
-                .build();
-
         telemetry.addLine("✅ Initialization Complete");
-        telemetry.addLine("Press [A] on Gamepad 1 to toggle turret lock.");
+        telemetry.addLine("Press and HOLD [A] to lock turret.");
         telemetry.update();
 
         waitForStart();
 
-        if (isStopRequested()) return;
-
         // ==================== OPMODE LOOP ====================
-
         while (opModeIsActive()) {
 
-            // --- Drive Control ---
-            // This uses your existing follower and drive constants
-            follower.setDrivePowers(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x
-            );
-
             // --- Turret Lock Control ---
-            // Simple toggle logic with debounce to prevent rapid switching
-            if (gamepad1.a && !gamepad1.start) {
-                turretLockSystem.toggleLock();
-                gamepad1.runRumbleEffect(rumbleEffect);
+            // If the 'A' button is held down, tell the system to lock on.
+            // If it's released, tell the system to unlock.
+            if (gamepad1.a) {
+                turretLockSystem.lockOn();
+            } else {
+                turretLockSystem.unlock();
             }
-            // Debounce by using a button that's unlikely to be pressed (start)
-            gamepad1.start = gamepad1.a;
 
-
-            // --- Core System Updates ---
-            // These MUST be called in every loop iteration
+            // --- System Updates ---
+            // These methods must be called in every single loop.
+            // They read sensor data and apply power to the motors.
             follower.update();
             turretLockSystem.update();
 
-            // Telemetry is handled by the turretLockSystem itself
+            // Display telemetry from the turret system.
             telemetry.update();
         }
     }

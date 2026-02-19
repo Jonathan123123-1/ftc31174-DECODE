@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto.Testing;
+package org.firstinspires.ftc.teamcode.AlreadyTourneyReady;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -17,7 +17,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Blue 12 Ball Enhanced", group = "Autonomous")
+@Autonomous(name = "100% BLUE - TEAM UP with EGG", group = "Autonomous")
 @Configurable
 public class Blue12BallTeamEnhanced extends OpMode {
     private TelemetryManager panelsTelemetry;
@@ -55,9 +55,9 @@ public class Blue12BallTeamEnhanced extends OpMode {
     // Define turret target ticks for each shot
     private static final int[] TURRET_TICKS = {
             -206,   // Preload position
-            -15,   // Position 1
-            -15,   // Position 2
-            125,   // Position 3
+            -8,   // Position 1
+            4,   // Position 2
+            -130,   // Position 3
             400,   // Position 4
             500    // Position 5
     };
@@ -86,7 +86,7 @@ public class Blue12BallTeamEnhanced extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize follower
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
         follower.setStartingPose(new Pose(57, 8, Math.toRadians(90)));
 
         // Initialize mechanism hardware
@@ -158,31 +158,31 @@ public class Blue12BallTeamEnhanced extends OpMode {
             preLoadShot = follower.pathBuilder().addPath(
                             new BezierLine(
                                     new Pose(57.000, 8.000),
-                                    new Pose(65.000, 73.000)
+                                    new Pose(66.000, 73.000)
                             )
                     ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
                     .build();
 
             pickup1 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(65.000, 73.000),
-                                    new Pose(54.261, 55.717),
-                                    new Pose(20.330, 60.000)
+                                    new Pose(64.000, 74.000),
+                                    new Pose(48.188, 25.940),
+                                    new Pose(34.000, 37.000)
                             )
                     ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             shoot1 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(20.330, 60.000),
-                                    new Pose(65.000, 73.000)
+                                    new Pose(24.000, 37.000),
+                                    new Pose(60.000, 110.000)
                             )
                     ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             pickup2 = follower.pathBuilder().addPath(
                             new BezierCurve(
-                                    new Pose(65.000, 73.000),
+                                    new Pose(66.000, 73.000),
                                     new Pose(48.188, 25.940),
                                     new Pose(20.000, 37.000)
                             )
@@ -200,16 +200,16 @@ public class Blue12BallTeamEnhanced extends OpMode {
             pickup3 = follower.pathBuilder().addPath(
                             new BezierCurve(
                                     new Pose(64.000, 74.000),
-                                    new Pose(59.662, 1.338),
-                                    new Pose(12.500, 15.000)
+                                    new Pose(59.612, 1.338),
+                                    new Pose(23.500, 15.000)
                             )
                     ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             shoot3 = follower.pathBuilder().addPath(
                             new BezierLine(
-                                    new Pose(12.500, 15.000),
-                                    new Pose(60.000, 110.000)
+                                    new Pose(23.500, 15.000),
+                                    new Pose(64.000, 74.000)
                             )
                     ).setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
@@ -297,7 +297,7 @@ public class Blue12BallTeamEnhanced extends OpMode {
                 // Shooter keeps running in background
 
                 // Follow pickup path
-                follow(paths.pickup1);
+                follow(paths.pickup2);
 
                 // Advance when path is complete
                 advanceAfterPath();
@@ -322,7 +322,7 @@ public class Blue12BallTeamEnhanced extends OpMode {
                 }
 
                 // Follow path back to shooting position
-                follow(paths.shoot1);
+                follow(paths.shoot2);
 
                 // Advance when path is complete
                 advanceAfterPath();
@@ -369,7 +369,7 @@ public class Blue12BallTeamEnhanced extends OpMode {
                 // Shooter keeps running in background
 
                 // Follow pickup path
-                follow(paths.pickup2);
+                follow(paths.pickup3);
 
                 // Advance when path is complete
                 advanceAfterPath();
@@ -382,126 +382,6 @@ public class Blue12BallTeamEnhanced extends OpMode {
                 advance();
                 break;
 
-            // ========== SHOOT 2 CYCLE ==========
-            case 10: // Move to shooting position with new shooter/turret settings
-                // Set shooter to new RPM for shot 2
-                shooterMotor.setVelocity(getCurrentShooterRPM());
-
-                // Start turret motor rotation to new position for shot 2
-                if (!turretMotorActive) {
-                    turretMotorActive = true;
-                    turretReachedTarget = false;
-                }
-
-                // Follow path back to shooting position
-                follow(paths.shoot2);
-
-                // Advance when path is complete
-                advanceAfterPath();
-                break;
-
-            case 11: // Execute shot 2
-                // Shooter motor stays on from case 10 at new RPM
-
-                // Open turret stopper after 1.5 seconds
-                if (StateTimer.seconds() >= STOPPER_OPEN_TIME) {
-                    turretServo.setPosition(TURRET_ACTIVE);
-
-                    // Run intake (negative to push ball out)
-                    intakeMotor.setVelocity(-INTAKE_VELOCITY);
-                }
-
-                // Advance after enough time for shooting
-                advanceAfter(2.5);
-                break;
-
-            case 12: // Reset after shot 2
-                // Close turret stopper
-                turretServo.setPosition(TURRET_HOME);
-
-                // Stop intake
-                intakeMotor.setVelocity(0);
-
-                // Keep shooter running for next shot
-                // Reset turret motor for next movement
-                turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                turretMotorActive = false;
-                turretReachedTarget = false;
-
-                currentShotIndex++; // Move to shot 3 configuration
-                advance();
-                break;
-
-            // ========== PICKUP 3 ==========
-            case 13: // Move to pickup position 3 and intake balls
-                // Turn on intake to pick up balls
-                intakeMotor.setVelocity(-INTAKE_VELOCITY);
-
-                // Shooter keeps running in background
-
-                // Follow pickup path
-                follow(paths.pickup3);
-
-                // Advance when path is complete
-                advanceAfterPath();
-                break;
-
-            case 14: // Stop intake after pickup
-                // Stop intake
-                intakeMotor.setVelocity(0);
-
-                advance();
-                break;
-
-            // ========== SHOOT 3 CYCLE (FINAL) ==========
-            case 15: // Move to shooting position with new shooter/turret settings
-                // Set shooter to new RPM for shot 3
-                shooterMotor.setVelocity(getCurrentShooterRPM());
-
-                // Start turret motor rotation to new position for shot 3
-                if (!turretMotorActive) {
-                    turretMotorActive = true;
-                    turretReachedTarget = false;
-                }
-
-                // Follow path back to shooting position
-                follow(paths.shoot3);
-
-                // Advance when path is complete
-                advanceAfterPath();
-                break;
-
-            case 16: // Execute shot 3 (final shot)
-                // Shooter motor stays on from case 15 at new RPM
-
-                // Open turret stopper after 1.5 seconds
-                if (StateTimer.seconds() >= STOPPER_OPEN_TIME) {
-                    turretServo.setPosition(TURRET_ACTIVE);
-
-                    // Run intake (negative to push ball out)
-                    intakeMotor.setVelocity(-INTAKE_VELOCITY);
-                }
-
-                // Advance after enough time for shooting
-                advanceAfter(2.5);
-                break;
-
-            case 17: // FINAL - Stop everything
-                // Close turret stopper
-                turretServo.setPosition(TURRET_HOME);
-
-                // Stop intake
-                intakeMotor.setVelocity(0);
-
-                // Stop shooter
-                shooterMotor.setVelocity(0);
-
-                // Stop turret motor
-                turretMotor.setPower(0);
-
-                // Program complete - all paths executed
-                break;
 
             default:
                 // Safety stop

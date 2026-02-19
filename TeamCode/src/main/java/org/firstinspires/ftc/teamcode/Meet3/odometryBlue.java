@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Turret;
+package org.firstinspires.ftc.teamcode.Meet3;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -46,7 +46,7 @@ public class odometryBlue extends OpMode {
     private final int MAX_TURRET_TICKS = 220;
     private final int MIN_TURRET_TICKS = -220;
     private final int BLUE_GOAL_TAG_ID = 20;
-    private final double INTAKE_VELOCITY = 3500;
+    private final double INTAKE_VELOCITY = 4000;
     private final double STOPPER_ENGAGED_POSITION = 0;
     private final double STOPPER_RELEASED_POSITION = 1.0;
     private final double RPM_ADJUSTMENT_STEP = 50;

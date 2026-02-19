@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto.Testing;
+package org.firstinspires.ftc.teamcode.AlreadyTourneyReady;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -17,7 +17,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Red 12 Testing by Ourselves - TEST V2", group = "Autonomous")
+@Autonomous(name = "TOURNAMENT - Red 12 CLOSE (3)", group = "Autonomous")
 @Configurable
 public class BallRedTest12 extends OpMode {
     private TelemetryManager panelsTelemetry;
@@ -44,20 +44,20 @@ public class BallRedTest12 extends OpMode {
     /* ================= SHOT CONFIGURATION ARRAYS ================= */
     // Define RPM for each shot (index 0 = preload, 1 = first pickup shot, etc.)
     private static final double[] SHOT_RPM = {
-            1255.0,  // Preload shot
+            1260.0,  // Preload shot
             1260.0,  // Shot 1
             1260.0,  // Shot 2
-            1230.0,  // Shot 3
+            1235.0,  // Shot 3
             1475.0,  // Shot 4
             1500.0   // Shot 5
     };
 
     // Define turret target ticks for each shot
     private static final int[] TURRET_TICKS = {
-            210,   // Preload position
-            5,   // Position 1
+            220,   // Preload position
+            8,   // Position 1
             5,   // Position 2
-            -135,   // Position 3
+            -145,   // Position 3
             400,   // Position 4
             500    // Position 5
     };
@@ -86,7 +86,7 @@ public class BallRedTest12 extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize follower
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
         follower.setStartingPose(new Pose(111, 134.5, Math.toRadians(270)));
 
         // Initialize mechanism hardware

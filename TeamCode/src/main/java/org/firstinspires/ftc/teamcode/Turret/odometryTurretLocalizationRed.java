@@ -48,7 +48,7 @@ public class odometryTurretLocalizationRed extends OpMode {
         imu = hardwareMap.get(IMU.class, "imu");
 
         // Odometry
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
         follower.setStartingPose(new Pose(0,0,0));
 
         // Turret

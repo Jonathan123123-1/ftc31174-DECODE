@@ -24,7 +24,7 @@ public class TurretMotorSpin extends LinearOpMode {
             // Check if right bumper is pressed
             if (gamepad1.right_bumper) {
                 // Spin the motor at full power
-                turretMotor.setPower(0.1);
+                turretMotor.setPower(0.8);
 
                 // Let it spin for 1 second (1000 ms)
                 sleep(500);

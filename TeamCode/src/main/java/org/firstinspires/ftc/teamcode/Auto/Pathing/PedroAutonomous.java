@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto;
+package org.firstinspires.ftc.teamcode.Auto.Pathing;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -25,7 +25,7 @@ public class PedroAutonomous extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
 
         // Robot is physically placed here
         follower.setStartingPose(new Pose(23, 120, Math.toRadians(180)));

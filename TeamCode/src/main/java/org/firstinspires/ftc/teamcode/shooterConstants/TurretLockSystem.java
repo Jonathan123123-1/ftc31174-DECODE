@@ -29,8 +29,8 @@ public class TurretLockSystem {
     // ==================== TURRET CONTROL ====================
     // Constants for turret motor control. You will need to tune these values.
     private static final double TURRET_TICKS_PER_DEGREE = 14.8; // EXAMPLE: Tune this for your turret
-    private static final double TURRET_kP = 0.04;               // Proportional gain for alignment
-    private static final double MAX_TURRET_POWER = 0.8;         // Max power for the turret
+    private static final double TURRET_kP = 0.02;               // Proportional gain for alignment
+    private static final double MAX_TURRET_POWER = 0.3;         // Max power for the turret
 
     // ==================== CONSTRUCTOR ====================
     public TurretLockSystem(
@@ -50,7 +50,8 @@ public class TurretLockSystem {
 
     // ==================== TARGET SETUP ====================
 
-    public void setTargetPosition(double x, double y) {
+    public void setTargetPosition(double x, double y)
+    {
         this.targetPosition = new Pose(x, y, 0);
     }
 

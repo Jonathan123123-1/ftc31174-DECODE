@@ -2,22 +2,22 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Shooter and Stopper Test", group = "TEST")
+@TeleOp(name = "Shooter and Intake Test", group = "TEST")
 public class ShooterStopperTest extends LinearOpMode {
 
     // --- Hardware ---
     private DcMotorEx shooterMotor;
-    private Servo turretStopper;
+    private DcMotorEx intakeMotor; // Replaced Servo with DcMotor
 
     // --- Control Logic ---
     private boolean shooterOn = false;
     private boolean lastTriggerPressed = false;
-    private boolean lastDpadRightPressed = false;
 
     private final double SHOOTER_POWER = 0.6;
+    private final double INTAKE_VELOCITY = 1800; // Velocity for the intake motor
 
     @Override
     public void runOpMode() {
@@ -25,24 +25,24 @@ public class ShooterStopperTest extends LinearOpMode {
         // --- Initialization ---
         try {
             shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
-            turretStopper = hardwareMap.get(Servo.class, "turret_stopper");
+            intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor"); // Hardware map the intake motor
 
-            // It's good practice to set a direction and run mode for the motor
-            shooterMotor.setDirection(DcMotorEx.Direction.FORWARD);
-            shooterMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-            shooterMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT); // Flywheels should float
+            shooterMotor.setDirection(DcMotor.Direction.FORWARD);
+            shooterMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-            // Set stopper to home position
-            turretStopper.setPosition(0);
+            intakeMotor.setDirection(DcMotor.Direction.FORWARD); // Set direction, might need to be REVERSE
+            intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Changed for velocity control
+            intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         } catch (Exception e) {
-            telemetry.addLine("ERROR: Could not find 'shooter_motor' or 'turret_stopper'.");
+            telemetry.addLine("ERROR: Could not find 'shooter_motor' or 'intake_motor'.");
+            telemetry.addLine(e.getMessage());
             telemetry.update();
             sleep(10000);
             return;
         }
 
-        telemetry.addLine("Shooter & Stopper Test Ready.");
+        telemetry.addLine("Shooter & Intake Test Ready.");
         telemetry.update();
 
         waitForStart();
@@ -65,24 +65,23 @@ public class ShooterStopperTest extends LinearOpMode {
                 shooterMotor.setPower(0);
             }
 
-            // --- D-Pad Right: Cycle the Stopper Servo ---
-            boolean dpadRightPressed = gamepad2.dpad_right;
-            if (dpadRightPressed && !lastDpadRightPressed) {
-                // 1. Move to push position
-                turretStopper.setPosition(0.5);
-                // 2. Wait a moment
-                sleep(250);
-                // 3. Return to home position
-                turretStopper.setPosition(0);
+            // --- D-Pad Control for Intake Motor ---
+            if (gamepad2.dpad_left || gamepad2.dpad_right) {
+                intakeMotor.setVelocity(0); // Stop intake
+            } else if (gamepad2.dpad_up) {
+                intakeMotor.setVelocity(INTAKE_VELOCITY); // Run intake in
+            } else if (gamepad2.dpad_down) {
+                intakeMotor.setVelocity(-INTAKE_VELOCITY); // Run intake out
+            } else {
+                intakeMotor.setVelocity(0); // Also stop if nothing is pressed
             }
-            lastDpadRightPressed = dpadRightPressed;
 
             // --- Telemetry ---
             telemetry.addData("Shooter Status", shooterOn ? "ON" : "OFF");
             telemetry.addData("Shooter Power", shooterMotor.getPower());
-            telemetry.addData("Stopper Position", turretStopper.getPosition());
+            telemetry.addData("Intake Velocity", intakeMotor.getVelocity());
             telemetry.addLine("\nPress Right Trigger to toggle shooter.");
-            telemetry.addLine("Press D-Pad Right to cycle stopper.");
+            telemetry.addLine("D-Pad Up/Down to run intake, Left/Right to stop.");
             telemetry.update();
         }
     }

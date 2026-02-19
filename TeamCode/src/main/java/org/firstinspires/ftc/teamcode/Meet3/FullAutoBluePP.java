@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto.Pathing;
+package org.firstinspires.ftc.teamcode.Meet3;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "12 Ball Auto - PedroPathing (Blue - 2)", group = "Autonomous")
+@Autonomous(name = "100% - 12 Ball blue", group = "Autonomous")
 @Configurable
 public class FullAutoBluePP extends OpMode {
 
@@ -80,7 +80,7 @@ public class FullAutoBluePP extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Hardware Mapping (THESE NAMES MUST MATCH YOUR CONFIGURATION)
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
         turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor");
@@ -159,32 +159,32 @@ public class FullAutoBluePP extends OpMode {
                     intakeMotor.setVelocity(0);
 
                     if (lastPathStarted == paths.preLoadShot) {
-                        intakeMotor.setVelocity(INTAKE_VELOCITY); // Turn intake on for next two paths
+                        intakeMotor.setVelocity(-INTAKE_VELOCITY); // Turn intake on for next two paths
                         follower.followPath(paths.pickup1, true);
                         lastPathStarted = paths.pickup1;
                     } else if (lastPathStarted == paths.pickup1) {
-                        intakeMotor.setVelocity(INTAKE_VELOCITY); // Keep intake on
+                        intakeMotor.setVelocity(-INTAKE_VELOCITY); // Keep intake on
                         follower.followPath(paths.openGate1, true);
                         lastPathStarted = paths.openGate1;
                     } else if (lastPathStarted == paths.openGate1) {
                         transitionToState(AutoState.SHOOT_1_AIM); // Arrived at shooting spot
 
                     } else if (lastPathStarted == paths.shoot1) {
-                        intakeMotor.setVelocity(INTAKE_VELOCITY); // Turn intake on for pickup
+                        intakeMotor.setVelocity(-INTAKE_VELOCITY); // Turn intake on for pickup
                         follower.followPath(paths.pickup2, true);
                         lastPathStarted = paths.pickup2;
                     } else if (lastPathStarted == paths.pickup2) {
                         follower.followPath(paths.grab1, true); // Intake is off for this path
                         lastPathStarted = paths.grab1;
                     } else if (lastPathStarted == paths.grab1) {
-                        intakeMotor.setVelocity(INTAKE_VELOCITY); // Intake ON to secure balls before moving
+                        intakeMotor.setVelocity(-INTAKE_VELOCITY); // Intake ON to secure balls before moving
                         follower.followPath(paths.shoot2, true);
                         lastPathStarted = paths.shoot2;
                     } else if (lastPathStarted == paths.shoot2) {
                         transitionToState(AutoState.SHOOT_2_AIM);
 
                     } else if (lastPathStarted == paths.grab2) {
-                         intakeMotor.setVelocity(INTAKE_VELOCITY); // Keep intake on
+                         intakeMotor.setVelocity(-INTAKE_VELOCITY); // Keep intake on
                          follower.followPath(paths.shoot3, true);
                          lastPathStarted = paths.shoot3;
                     } else if (lastPathStarted == paths.shoot3) {
@@ -230,7 +230,7 @@ public class FullAutoBluePP extends OpMode {
             case SHOOT_2_RESET:
                 turretMotor.setTargetPosition(0);
                 if (!turretMotor.isBusy()) {
-                    intakeMotor.setVelocity(INTAKE_VELOCITY); // Turn on intake for the next path
+                    intakeMotor.setVelocity(-INTAKE_VELOCITY); // Turn on intake for the next path
                     follower.followPath(paths.grab2, true);
                     lastPathStarted = paths.grab2;
                     transitionToState(AutoState.PATH_FOLLOWING);
@@ -285,7 +285,7 @@ public class FullAutoBluePP extends OpMode {
                 shootingState = ShootingCycleState.INTAKE_PULSE;
                 break;
             case INTAKE_PULSE:
-                intakeMotor.setVelocity(INTAKE_VELOCITY); // Pulse intake to feed ball
+                intakeMotor.setVelocity(-INTAKE_VELOCITY); // Pulse intake to feed ball
                 if (stateTimer.seconds() > INTAKE_PULSE_SECONDS) {
                     intakeMotor.setVelocity(0);
                     shootingState = ShootingCycleState.STOPPER_DOWN;

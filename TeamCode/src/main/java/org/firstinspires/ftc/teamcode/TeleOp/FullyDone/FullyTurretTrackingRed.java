@@ -116,7 +116,7 @@ public class FullyTurretTrackingRed extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         imu = hardwareMap.get(IMU.class, "imu");
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
 
         turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
         turretMotor.setDirection(DcMotorEx.Direction.REVERSE);

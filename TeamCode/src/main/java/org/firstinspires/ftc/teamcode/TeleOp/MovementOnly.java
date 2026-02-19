@@ -15,7 +15,7 @@ public class MovementOnly extends OpMode {
     private IMU imu;
 
     // --- Speed Control ---
-    private double maxSpeed = 1.0;
+    private double maxSpeed = 0.95;
 
     // --- Field-oriented toggle ---
     private boolean fieldOriented = false;
@@ -33,11 +33,16 @@ public class MovementOnly extends OpMode {
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        // Use encoders
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Also set zero power behavior for instant stop
+        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Initialize IMU
         imu = hardwareMap.get(IMU.class, "imu");
@@ -57,12 +62,20 @@ public class MovementOnly extends OpMode {
 
         // Speed modes
         if (gamepad1.a) maxSpeed = 0.5;
-        if (gamepad1.b) maxSpeed = 1.0;
+        if (gamepad1.b) maxSpeed = 0.95;
 
         // Driver sticks
         double forward = -gamepad1.left_stick_y;
         double right = gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
+
+        if (Math.abs(forward) < 0.1) forward = 0;
+        if (Math.abs(right) < 0.1) right = 0;
+        if (Math.abs(rotate) < 0.1) rotate = 0;
+
+        forward = Math.signum(forward) * forward * forward;
+        right = Math.signum(right) * right * right;
+        rotate = Math.signum(rotate) * rotate * rotate;
 
         // Field-oriented transformation
         if (fieldOriented) {
@@ -74,6 +87,7 @@ public class MovementOnly extends OpMode {
 
         // Drive
         drive(forward, right, rotate);
+
 
         // Telemetry
         telemetry.addData("Speed Mode", maxSpeed);
@@ -101,10 +115,12 @@ public class MovementOnly extends OpMode {
             br /= max;
         }
 
+        double turboMultiplier = gamepad1.left_bumper ? 1.0 : maxSpeed;
+
         // Apply speed
-        frontLeftDrive.setPower(fl * maxSpeed);
-        frontRightDrive.setPower(fr * maxSpeed);
-        backLeftDrive.setPower(bl * maxSpeed);
-        backRightDrive.setPower(br * maxSpeed);
+        frontLeftDrive.setPower(fl * turboMultiplier);
+        frontRightDrive.setPower(fr * turboMultiplier);
+        backLeftDrive.setPower(bl * turboMultiplier);
+        backRightDrive.setPower(br * turboMultiplier);
     }
 }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto.Testing;
+package org.firstinspires.ftc.teamcode.AlreadyTourneyReady;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -17,7 +17,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous(name = "Blue 12 Testing FAR - TEST V2", group = "Autonomous")
+@Autonomous(name = "TOURNAMENT - Blue 12 FAR (2)", group = "Autonomous")
 @Configurable
 public class BallBlueTest12Far extends OpMode {
     private TelemetryManager panelsTelemetry;
@@ -39,12 +39,12 @@ public class BallBlueTest12Far extends OpMode {
     private static final double SHOOTER_kP = 225.0;
     private static final double SHOOTER_kI = 11.0;
     private static final double SHOOTER_kD = 0.0;
-    private static final double SHOOTER_kF = 14.0;
+    private static final double SHOOTER_kF = 13.0;
 
     /* ================= SHOT CONFIGURATION ARRAYS ================= */
     // Define RPM for each shot (index 0 = preload, 1 = first pickup shot, etc.)
     private static final double[] SHOT_RPM = {
-            1255.0,  // Preload shot
+            1260.0,  // Preload shot
             1260.0,  // Shot 1
             1260.0,  // Shot 2
             1230.0,  // Shot 3
@@ -86,7 +86,7 @@ public class BallBlueTest12Far extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize follower
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(hardwareMap,telemetry);
         follower.setStartingPose(new Pose(57, 8, Math.toRadians(90)));
 
         // Initialize mechanism hardware

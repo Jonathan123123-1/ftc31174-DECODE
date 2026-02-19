@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.TeleOp.Testing;
+package org.firstinspires.ftc.teamcode.AlreadyTourneyReady;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -11,14 +11,14 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.shooterConstants.ShooterConstants;
 
-@TeleOp(name = "DUAL Controls - Test Blue", group = "TEST")
+@TeleOp(name = "1000% TOURNAMENT - TeleOp DUAL Blue", group = "TEST")
 public class Dual_TestBlue extends LinearOpMode {
 
     /* ================= DRIVE ================= */
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private IMU imu;
 
-    private double maxSpeed = 0.9;
+    private double maxSpeed = 0.95;
     private boolean fieldOriented = false;
     private boolean lastFieldToggle = false;
 
@@ -40,10 +40,10 @@ public class Dual_TestBlue extends LinearOpMode {
     private long turretStartTime = 0;
 
     /* ================= SHOOTER CONSTANTS ================= */
-    private static final double FAR_VELOCITY = 1545;   // 1570 RPM
-    private static final double CLOSE_VELOCITY = 1260; // 1250 RPM
+    private static final double FAR_VELOCITY = 1515;   // 1570 RPM
+    private static final double CLOSE_VELOCITY = 1280; // 1250 RPM
 
-    private static final double SHOOTER_kP = 185.0;
+    private static final double SHOOTER_kP = 180.0;
     private static final double SHOOTER_kI = 13.0;
     private static final double SHOOTER_kD = 0.0;
     private static final double SHOOTER_kF = 18;
@@ -56,7 +56,7 @@ public class Dual_TestBlue extends LinearOpMode {
     private static final double TURRET_HOME = 0.45;
     private static final double TURRET_ACTIVE = 0.2;
     private static final long TURRET_TIME_MS = 1500;
-    private static final double LimeLight_kP = 0.012;//0.012
+    private static final double LimeLight_kP = 0.008;//0.012
 
     /* ================= LIMELIGHT CONSTANTS ================= */
     // TODO: Tune these values for your specific robot and target
@@ -87,10 +87,16 @@ public class Dual_TestBlue extends LinearOpMode {
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Also set zero power behavior for instant stop
+        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -143,11 +149,19 @@ public class Dual_TestBlue extends LinearOpMode {
             lastFieldToggle = fieldToggle;
 
             if (gamepad1.a) maxSpeed = 0.6;
-            if (gamepad1.b) maxSpeed = 0.88;
+            if (gamepad1.b) maxSpeed = 0.95;
 
             double forward = -gamepad1.left_stick_y;
             double right = gamepad1.left_stick_x;
             double rotate = gamepad1.right_stick_x;
+
+            if (Math.abs(forward) < 0.1) forward = 0;
+            if (Math.abs(right) < 0.1) right = 0;
+            if (Math.abs(rotate) < 0.1) rotate = 0;
+
+            forward = Math.signum(forward) * forward * forward;
+            right = Math.signum(right) * right * right;
+            rotate = Math.signum(rotate) * rotate * rotate;
 
             if (fieldOriented) {
                 double heading = imu.getRobotYawPitchRollAngles().getYaw();
@@ -238,10 +252,13 @@ public class Dual_TestBlue extends LinearOpMode {
             bl /= max;
             br /= max;
         }
+        double turboMultiplier = gamepad1.left_bumper ? 1.0 : maxSpeed;
 
-        frontLeftDrive.setPower(fl * maxSpeed);
-        frontRightDrive.setPower(fr * maxSpeed);
-        backLeftDrive.setPower(bl * maxSpeed);
-        backRightDrive.setPower(br * maxSpeed);
+        // Apply speed
+        frontLeftDrive.setPower(fl * turboMultiplier);
+        frontRightDrive.setPower(fr * turboMultiplier);
+        backLeftDrive.setPower(bl * turboMultiplier);
+        backRightDrive.setPower(br * turboMultiplier);
+
     }
 }

@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.TeleOp;
+package org.firstinspires.ftc.teamcode.TeleOp.CompReady;
 
-import android.util.Size;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -25,7 +24,7 @@ import org.firstinspires.ftc.teamcode.shooterConstants.distanceLocalization;
 
 import java.util.List;
 
-@TeleOp(name = "Competition TeleOp - BLUE", group = "COMPETITION")
+@TeleOp(name = "NO TeleOp - BLUE", group = "COMPETITION")
 public class CompetitionTeleOp_BLUE extends OpMode {
 
     // --- Hardware ---
@@ -54,7 +53,7 @@ public class CompetitionTeleOp_BLUE extends OpMode {
     private boolean lastJoyUp2 = false, lastJoyDown2 = false;
     private boolean lastTriggerL2 = false, lastTriggerR2 = false;
     private boolean lastBtnX2 = false, lastBtnB2 = false;
-    
+
     private double manualHoodOffset = 0.0;
     private double manualRpmOffset = 0.0;
     private int manualTurretOffset = 0;
@@ -66,9 +65,9 @@ public class CompetitionTeleOp_BLUE extends OpMode {
     private final double TURRET_POWER = 0.8;
     private final int TURRET_HOME_POSITION = 0;
     private final double TURRET_TICKS_PER_DEGREE = 1.4936;
-    private final int MAX_TURRET_TICKS = 270;
+    private final int MAX_TURRET_TICKS = 180;
     private final int MIN_TURRET_TICKS = -270;
-    private final double INTAKE_VELOCITY = 3000;
+    private final double INTAKE_VELOCITY = 1800;
     private final int BLUE_GOAL_TAG_ID = 20;
 
     @Override
@@ -98,7 +97,7 @@ public class CompetitionTeleOp_BLUE extends OpMode {
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor");
         hoodServo = hardwareMap.get(Servo.class, "turret_servo");
-        turretStopper = hardwareMap.get(Servo.class, "turret_stopper");
+        turretStopper = hardwareMap.get(Servo.class, "turretStopper");
 
         turretMotor.setDirection(DcMotorEx.Direction.REVERSE);
         turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -112,7 +111,7 @@ public class CompetitionTeleOp_BLUE extends OpMode {
         // Vision
         tagProcessor = new AprilTagProcessor.Builder().setLensIntrinsics(822.317, 822.317, 319.495, 242.502).build();
         visionPortal = new VisionPortal.Builder().setCamera(hardwareMap.get(WebcamName.class, "Webcam 1")).addProcessor(tagProcessor).build();
-        
+
         telemetry.addLine("Competition TeleOp Initialized. Ready for Battle.");
         telemetry.update();
     }
@@ -128,10 +127,10 @@ public class CompetitionTeleOp_BLUE extends OpMode {
     private void handleDriving() {
         if (gamepad1.x && !lastToggleX1) driveMode = DriveMode.FIELD_CENTRIC;
         lastToggleX1 = gamepad1.x;
-        if (gamepad1.a && !lastToggleA1) driveMode = DriveMode.ROBOT_CENTRIC;
-        lastToggleA1 = gamepad1.a;
-        if (gamepad1.left_bumper && !lastToggleLB1) speedMode = (speedMode == SpeedMode.FAST) ? SpeedMode.SLOW : SpeedMode.FAST;
-        lastToggleLB1 = gamepad1.left_bumper;
+        if (gamepad1.b && !lastToggleA1) driveMode = DriveMode.ROBOT_CENTRIC;
+        lastToggleA1 = gamepad1.b;
+        if (gamepad1.a && !lastToggleLB1) speedMode = (speedMode == SpeedMode.FAST) ? SpeedMode.SLOW : SpeedMode.FAST;
+        lastToggleLB1 = gamepad1.a;
 
         double maxSpeed = (speedMode == SpeedMode.FAST) ? FAST_MODE_SPEED : SLOW_MODE_SPEED;
         double y = -gamepad1.left_stick_y * maxSpeed, x = gamepad1.left_stick_x * maxSpeed, rx = gamepad1.right_stick_x * maxSpeed;
@@ -206,7 +205,7 @@ public class CompetitionTeleOp_BLUE extends OpMode {
                 break;
             case IDLE:
                 if(stopperTimer.milliseconds() > 250) {
-                     turretStopper.setPosition(0);
+                    turretStopper.setPosition(0);
                 }
                 break;
         }
@@ -239,7 +238,7 @@ public class CompetitionTeleOp_BLUE extends OpMode {
         turretMotor.setTargetPosition(clampedPosition);
         turretMotor.setPower(TURRET_POWER);
     }
-    
+
     private AprilTagDetection getBlueTag() {
         List<AprilTagDetection> detections = tagProcessor.getDetections();
         if (detections != null) {

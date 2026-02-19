@@ -12,7 +12,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.List;
 
-@Autonomous(name = "100% - FullAuto Blue", group = "Autonomous")
+@Autonomous(name = "100% - FullAuto Blue (Meet)", group = "Autonomous")
 public class AutoBlueTest extends LinearOpMode {
 
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;

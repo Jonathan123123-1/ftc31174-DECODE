@@ -3,21 +3,25 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-@TeleOp(name = "Turret Slow Turn Test", group = "TEST")
+@TeleOp(name = "Turret Slow Turn Test - MANUAL PID", group = "TEST")
 public class TurretSlowTurnTest extends LinearOpMode {
 
     // --- Hardware ---
-    private DcMotorEx turretMotor;
+    private DcMotor turretMotor;
 
     // --- Turret State & Constants ---
-    private enum TurretState { IDLE, MOVING_LEFT, MOVING_RIGHT }
+    private enum TurretState { IDLE, MOVING_TO_TARGET }
     private TurretState currentState = TurretState.IDLE;
+    private int targetPosition = 0;
 
-    // Based on REV Through Bore (8192) with a 5:1 ratio: (8192 * 5) / 360
-    private final double TICKS_PER_DEGREE = 113.78;
-    private final double SLOW_TURRET_POWER = 0.3; // Low power for slow, controlled movement
+    // --- Manual PID Controller Constants ---
+    // Tuned for a slower, more controlled motion with a hard lock.
+    private double kP = 0.02;  // Proportional: Main driving force.
+    private double kI = 0.007; // Integral: Overcomes friction to lock on target.
+    private double kD = 0.03;  // Derivative: Prevents overshoot.
+    private double integralSum = 0;
+    private double lastError = 0;
 
     // --- Gamepad Button Tracking ---
     private boolean lastLeftBumper = false;
@@ -28,21 +32,19 @@ public class TurretSlowTurnTest extends LinearOpMode {
 
         // --- Initialization ---
         try {
-            turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
-            // Set direction - if it spins the wrong way, change this to REVERSE
-            turretMotor.setDirection(DcMotorEx.Direction.FORWARD);
+            turretMotor = hardwareMap.get(DcMotor.class, "turret_motor");
+            turretMotor.setDirection(DcMotor.Direction.REVERSE);
             turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            turretMotor.setTargetPosition(0);
-            turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         } catch (Exception e) {
-            telemetry.addLine("ERROR: Could not find 'turret_motor'. Check hardware config.");
+            telemetry.addLine("FATAL ERROR: Could not find 'turret_motor'.");
             telemetry.update();
             sleep(10000);
             return;
         }
 
-        telemetry.addLine("Turret Slow Turn Test Ready.");
-        telemetry.addLine("Use Left/Right Bumper on Gamepad 2.");
+        telemetry.addLine("Turret Hard Stop PID Test Ready.");
         telemetry.update();
 
         waitForStart();
@@ -52,51 +54,53 @@ public class TurretSlowTurnTest extends LinearOpMode {
             // --- Gamepad Input (Gamepad 2) ---
             boolean leftBumperPressed = gamepad2.left_bumper;
             if (leftBumperPressed && !lastLeftBumper) {
-                if (currentState == TurretState.MOVING_LEFT) {
-                    // If we are already moving left, stop by going home
-                    turretMotor.setTargetPosition(0);
-                    currentState = TurretState.IDLE;
-                } else {
-                    // Start moving to the -90 degree position
-                    int targetPosition = (int) (-90.0 * TICKS_PER_DEGREE);
-                    turretMotor.setTargetPosition(targetPosition);
-                    currentState = TurretState.MOVING_LEFT;
-                }
+                targetPosition = (targetPosition == -20) ? 0 : -20;
+                integralSum = 0; // Reset PID for a clean move
+                lastError = 0;
+                currentState = TurretState.MOVING_TO_TARGET;
             }
             lastLeftBumper = leftBumperPressed;
 
             boolean rightBumperPressed = gamepad2.right_bumper;
             if (rightBumperPressed && !lastRightBumper) {
-                if (currentState == TurretState.MOVING_RIGHT) {
-                    // If we are already moving right, stop by going home
-                    turretMotor.setTargetPosition(0);
-                    currentState = TurretState.IDLE;
-                } else {
-                    // Start moving to the +90 degree position
-                    int targetPosition = (int) (90.0 * TICKS_PER_DEGREE);
-                    turretMotor.setTargetPosition(targetPosition);
-                    currentState = TurretState.MOVING_RIGHT;
-                }
+                targetPosition = (targetPosition == 20) ? 0 : 20;
+                integralSum = 0; // Reset PID for a clean move
+                lastError = 0;
+                currentState = TurretState.MOVING_TO_TARGET;
             }
             lastRightBumper = rightBumperPressed;
 
-            // Set motor power only when it has a target to move to
-            if (currentState != TurretState.IDLE) {
-                turretMotor.setPower(SLOW_TURRET_POWER);
-            } else {
-                // If idle, hold position with a bit of power or relax it
-                if (Math.abs(turretMotor.getCurrentPosition()) < 5) {
-                    turretMotor.setPower(0); // Relax motor when near home
+            // --- State Machine & Manual PID Logic ---
+            if (currentState == TurretState.MOVING_TO_TARGET) {
+                int currentPosition = turretMotor.getCurrentPosition();
+                int error = targetPosition - currentPosition;
+
+                // Check if we have settled at the target
+                if (Math.abs(error) < 3) { // 3-tick tolerance
+                    currentState = TurretState.IDLE;
                 } else {
-                    turretMotor.setPower(SLOW_TURRET_POWER); // Hold position
+                    integralSum += error;
+                    double derivative = error - lastError;
+                    lastError = error;
+                    double power = (kP * error) + (kI * integralSum) + (kD * derivative);
+
+                    // THE FIX: Decreased power cap for slower movement
+                    power = Math.max(-0.3, Math.min(0.3, power));
+
+                    turretMotor.setPower(power);
                 }
+            } 
+            
+            if (currentState == TurretState.IDLE) { 
+                // Ensure motor power is zero to engage the BRAKE behavior
+                turretMotor.setPower(0);
             }
 
             // --- Telemetry ---
             telemetry.addData("Turret State", currentState);
-            telemetry.addData("Target Ticks", turretMotor.getTargetPosition());
+            telemetry.addData("Target Ticks", targetPosition);
             telemetry.addData("Current Ticks", turretMotor.getCurrentPosition());
-            telemetry.addData("Current Degrees", turretMotor.getCurrentPosition() / TICKS_PER_DEGREE);
+            telemetry.addData("Motor Power", turretMotor.getPower());
             telemetry.update();
         }
     }

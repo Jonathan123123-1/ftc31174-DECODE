@@ -27,25 +27,28 @@ public class ManualShooterTeleOpRed extends OpMode {
     // --- Control Constants ---
     private final double TURRET_MANUAL_POWER = 0.5;
     private final double INTAKE_VELOCITY = 4000;
-    private final double SHOOTER_TARGET_RPM = 1570; // Fixed RPM for manual shooting
+    private final double SHOOTER_HIGH_RPM = 1545; // B button locks to this RPM
+    private final double SHOOTER_LOW_RPM = 1280;  // A button locks to this RPM
     private final double STOPPER_ENGAGED_POSITION = 0;
     private final double STOPPER_RELEASED_POSITION = 1.0;
 
     // --- Shooter PIDF ---
-    private final double SHOOTER_P = 25.0;
+    private final double SHOOTER_P = 30.0;
     private final double SHOOTER_I = 5.0;
     private final double SHOOTER_D = 0.0;
-    private final double SHOOTER_F = 15.0;
+    private final double SHOOTER_F = 20.0;
 
     // --- Logic Variables ---
     private boolean fieldOriented = false;
     private boolean lastToggleX = false;
     private boolean slowMode = false;
     private boolean lastGamepad1A = false;
+    private boolean lastGamepad2A = false;
+    private boolean lastGamepad2B = false;
+    private boolean lastGamepad2Y = false;
     private boolean lastGamepad2X = false;
     private boolean stopperEngaged = false;
-    private boolean shooterOn = false;
-    private boolean lastGamepad2Y = false;
+    private double currentTargetRPM = 0;
 
 
     @Override
@@ -74,6 +77,7 @@ public class ManualShooterTeleOpRed extends OpMode {
         shooterMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         shooterMotor.setVelocityPIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
 
+        intakeMotor.setDirection(DcMotor.Direction.REVERSE); // FIX: Reverse intake motor direction
         intakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         turretStopper.setPosition(STOPPER_RELEASED_POSITION);
         
@@ -92,7 +96,7 @@ public class ManualShooterTeleOpRed extends OpMode {
                 .pathConstraints(Constants.pathConstraints)
                 .mecanumDrivetrain(Constants.driveConstants)
                 .build();
-        follower.setStartingPose(new Pose(0,0,0)); // Set a default starting pose
+        follower.setStartingPose(new Pose(144,5,0)); // Set a default starting pose
 
         telemetry.addLine("Manual Shooter TeleOp Initialized.");
         telemetry.update();
@@ -123,17 +127,22 @@ public class ManualShooterTeleOpRed extends OpMode {
         }
         lastGamepad2X = gamepad2.x;
 
-        // --- Shooter On/Off Toggle ---
-        if (gamepad2.y && !lastGamepad2Y) {
-            shooterOn = !shooterOn;
+        // --- RPM Lock Selection ---
+        if (gamepad2.b && !lastGamepad2B) { // B button locks to High RPM
+            currentTargetRPM = SHOOTER_HIGH_RPM;
         }
+        if (gamepad2.a && !lastGamepad2A) { // A button locks to Low RPM
+            currentTargetRPM = SHOOTER_LOW_RPM;
+        }
+        if (gamepad2.y && !lastGamepad2Y) { // Y button turns shooter off
+            currentTargetRPM = 0;
+        }
+        lastGamepad2A = gamepad2.a;
+        lastGamepad2B = gamepad2.b;
         lastGamepad2Y = gamepad2.y;
 
-        if (shooterOn) {
-            shooterMotor.setVelocity(SHOOTER_TARGET_RPM);
-        } else {
-            shooterMotor.setVelocity(0);
-        }
+        // Set the shooter motor velocity to the currently locked RPM
+        shooterMotor.setVelocity(currentTargetRPM);
 
         // --- Manual Turret Control ---
         turretMotor.setPower(-gamepad2.left_stick_y * TURRET_MANUAL_POWER);
@@ -169,7 +178,7 @@ public class ManualShooterTeleOpRed extends OpMode {
         Pose robotPose = follower.getPose();
         telemetry.addLine("--- MANUAL SHOOTER MODE ---");
         telemetry.addData("Drive Mode", (fieldOriented ? "FIELD" : "ROBOT") + (slowMode ? " | SLOW" : ""));
-        telemetry.addData("Shooter", shooterOn ? "ON (" + SHOOTER_TARGET_RPM + " RPM)" : "OFF");
+        telemetry.addData("Target RPM", "%.1f", currentTargetRPM);
         telemetry.addData("Turret Power", turretMotor.getPower());
         telemetry.addData("Intake Velocity", intakeMotor.getVelocity());
         telemetry.addLine("\n--- ROBOT POSE ---");
