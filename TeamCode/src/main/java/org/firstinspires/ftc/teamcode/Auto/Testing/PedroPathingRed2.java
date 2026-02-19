@@ -7,7 +7,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -25,7 +24,7 @@ public class PedroPathingRed2 extends OpMode {
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(87, 8, Math.toRadians(90)));
         paths = new Paths(follower);
         panelsTelemetry.debug("Status", "Initialized");

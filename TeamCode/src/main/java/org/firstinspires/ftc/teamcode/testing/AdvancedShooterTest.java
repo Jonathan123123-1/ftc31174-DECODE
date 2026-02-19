@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 import org.firstinspires.ftc.teamcode.shooterConstants.AdvancedShooterSystem;
 
 /**
@@ -338,7 +338,7 @@ public class AdvancedShooterTest extends LinearOpMode {
 
         turretStopperServo.setPosition(TURRET_HOME);
 
-        follower = Constants.createFollower(hardwareMap, telemetry);
+        follower = teleConstants.createFollower(hardwareMap, telemetry);
         follower.setStartingPose(new Pose(72, 72, 0));
     }
 

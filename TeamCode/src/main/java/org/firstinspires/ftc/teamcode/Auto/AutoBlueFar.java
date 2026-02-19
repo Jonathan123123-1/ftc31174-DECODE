@@ -25,7 +25,7 @@ public class AutoBlueFar extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
 
         // ✅ Robot physically starts here
         follower.setStartingPose(new Pose(56, 9, Math.toRadians(180)));

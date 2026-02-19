@@ -24,7 +24,7 @@ public class TeamUpBlue extends OpMode {
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
         paths = new Paths(follower);
 

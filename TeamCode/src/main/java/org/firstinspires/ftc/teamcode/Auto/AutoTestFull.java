@@ -24,7 +24,7 @@ public class AutoTestFull extends OpMode {
     public void init() {
         pathTimer = new Timer();
         opModeTimer = new Timer();
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
 
         buildPaths();
 

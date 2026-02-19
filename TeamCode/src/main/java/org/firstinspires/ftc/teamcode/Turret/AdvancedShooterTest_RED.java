@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 
 @TeleOp(name = "Decode FTC Implementation", group = "TEST")
 public class AdvancedShooterTest_RED extends OpMode {
@@ -29,7 +29,7 @@ public class AdvancedShooterTest_RED extends OpMode {
 
     @Override
     public void init() {
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = teleConstants.createFollower(hardwareMap,telemetry);
 
         // Drive Motors
         frontLeft = hardwareMap.get(DcMotor.class, "front_left_drive");

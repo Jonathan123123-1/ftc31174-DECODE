@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 import org.firstinspires.ftc.teamcode.shooterConstants.distanceLocalization;
 
 import java.util.List;
@@ -116,7 +116,7 @@ public class FullyTurretTracking extends LinearOpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         imu = hardwareMap.get(IMU.class, "imu");
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = teleConstants.createFollower(hardwareMap,telemetry);
 
         turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
         turretMotor.setDirection(DcMotorEx.Direction.REVERSE);

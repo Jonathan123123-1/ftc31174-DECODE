@@ -24,10 +24,10 @@ public class TurretAiming {
     // ==================== GOAL POSITIONS ====================
 
     /** RED alliance goal (x, y in inches) - TODO: SET THESE! */
-    private static final Pose RED_GOAL = new Pose(135.0, 135.0, 0);
+    private static final Pose RED_GOAL = new Pose(135.0, 140.0);
 
     /** BLUE alliance goal (x, y in inches) - TODO: SET THESE! */
-    private static final Pose BLUE_GOAL = new Pose(15.0, 135.0, 0);
+    private static final Pose BLUE_GOAL = new Pose(15.0, 140.0);
 
     private Alliance currentAlliance = Alliance.BLUE;
 
@@ -38,10 +38,10 @@ public class TurretAiming {
     // ==================== TURRET CONSTRAINTS ====================
     // TODO: MEASURE AND SET THESE BASED ON YOUR PHYSICAL LIMITS!
 
-    /** Minimum turret angle (radians) - can't go further counter-clockwise */
+    /** Minimum turret angle (radians) - robot-relative, can't go further counter-clockwise */
     private static final double TURRET_MIN_ANGLE_RAD = Math.toRadians(-135);
 
-    /** Maximum turret angle (radians) - can't go further clockwise */
+    /** Maximum turret angle (radians) - robot-relative, can't go further clockwise */
     private static final double TURRET_MAX_ANGLE_RAD = Math.toRadians(135);
 
     /** Turret home position (radians, typically 0 = straight forward) */
@@ -53,7 +53,7 @@ public class TurretAiming {
     // Count encoder ticks, then: TICKS_PER_RADIAN = ticks / (π/2)
 
     /** How many encoder ticks per radian of turret rotation */
-    private static final double TURRET_TICKS_PER_RADIAN = -100.0;
+    private static final double TURRET_TICKS_PER_RADIAN = 427.8880645026;
 
     // ==================== CONTROL CONSTANTS ====================
 
@@ -70,7 +70,7 @@ public class TurretAiming {
     private static final int TURRET_TOLERANCE_TICKS = 10;
 
     /** Limelight proportional gain for fine adjustment */
-    private static final double LIMELIGHT_KP = 0.008;
+    private static final double LIMELIGHT_KP = 0.0065;
 
     /** Minimum power when using Limelight */
     private static final double LIMELIGHT_MIN_POWER = 0.085;
@@ -79,9 +79,12 @@ public class TurretAiming {
 
     private boolean isActive = false;           // Is turret aiming active?
     private boolean useLimelightCorrection = false;  // Should we use Limelight?
+    private boolean isGoingHome = false;        // Are we returning to home position?
 
-    private double targetAngleFieldRelative = 0.0;  // Target angle (field coords)
+    private double targetAngleFieldRelative = 0.0;   // Target angle in field coords (for telemetry)
+    private double targetAngleRobotRelative = 0.0;   // Target angle in robot coords (clamped)
     private int targetTicks = 0;                     // Target in motor ticks
+    private boolean lastTargetWasSafe = true;        // Was last target within turret limits?
 
     // ==================== CONSTRUCTOR ====================
 
@@ -106,35 +109,51 @@ public class TurretAiming {
      */
     public void update(Pose robotPose, double robotHeading) {
         if (!isActive) {
-            // Not aiming - stop motor
             turretMotor.setPower(0);
             return;
         }
 
-        // Calculate angle to goal using odometry
+        // If going home, bypass odometry calculation and drive straight to tick 0
+        if (isGoingHome) {
+            targetTicks = (int)(TURRET_HOME_ANGLE_RAD * TURRET_TICKS_PER_RADIAN); // = 0
+            updateWithOdometry();
+            // Once we've arrived, clear the flag
+            if (isAtTarget()) {
+                isGoingHome = false;
+            }
+            return;
+        }
+
+        // Step 1: Field-relative angle from robot to goal
         Pose goal = getCurrentGoal();
         double dx = goal.getX() - robotPose.getX();
         double dy = goal.getY() - robotPose.getY();
-        double angleToGoal = Math.atan2(dy, dx);  // Field-relative angle
+        double fieldAngleToGoal = Math.atan2(dy, dx);
 
-        // Clamp to turret limits
-        targetAngleFieldRelative = clampAngle(angleToGoal);
+        // Step 2: Store field-relative angle for telemetry reference
+        targetAngleFieldRelative = fieldAngleToGoal;
 
-        // Convert to robot-relative angle (subtract robot heading)
-        double robotRelativeAngle = targetAngleFieldRelative - robotHeading;
+        // Step 3: Convert to robot-relative angle (subtract robot heading)
+        double robotRelativeAngle = normalizeAngle(fieldAngleToGoal - robotHeading);
 
-        // Normalize to [-π, π]
-        robotRelativeAngle = normalizeAngle(robotRelativeAngle);
+        // Step 4: Check if target is within physical turret limits (robot frame — correct!)
+        lastTargetWasSafe = (robotRelativeAngle >= TURRET_MIN_ANGLE_RAD
+                && robotRelativeAngle <= TURRET_MAX_ANGLE_RAD);
 
-        // Convert to motor ticks
+        // Step 5: Clamp to physical turret limits in robot frame
+        robotRelativeAngle = Math.max(TURRET_MIN_ANGLE_RAD,
+                Math.min(TURRET_MAX_ANGLE_RAD, robotRelativeAngle));
+
+        // Step 6: Store the clamped robot-relative angle
+        targetAngleRobotRelative = robotRelativeAngle;
+
+        // Step 7: Convert to motor ticks
         targetTicks = (int)(robotRelativeAngle * TURRET_TICKS_PER_RADIAN);
 
-        // Control turret motor
+        // Step 8: Drive motor
         if (useLimelightCorrection && limelight != null) {
-            // Use Limelight for fine adjustment
             updateWithLimelight();
         } else {
-            // Use odometry only
             updateWithOdometry();
         }
     }
@@ -204,6 +223,7 @@ public class TurretAiming {
      */
     public void startAiming() {
         isActive = true;
+        isGoingHome = false;
     }
 
     /**
@@ -211,6 +231,7 @@ public class TurretAiming {
      */
     public void stopAiming() {
         isActive = false;
+        isGoingHome = false;
         turretMotor.setPower(0);
     }
 
@@ -248,12 +269,16 @@ public class TurretAiming {
     }
 
     /**
-     * Return turret to home position
+     * Return turret to home position (tick 0 = straight forward)
+     * Sets a flag so update() drives to home instead of re-calculating from odometry
      */
     public void goHome() {
         isActive = true;
-        targetAngleFieldRelative = TURRET_HOME_ANGLE_RAD;
+        isGoingHome = true;
         useLimelightCorrection = false;
+        targetAngleFieldRelative = TURRET_HOME_ANGLE_RAD;
+        targetAngleRobotRelative = TURRET_HOME_ANGLE_RAD;
+        targetTicks = (int)(TURRET_HOME_ANGLE_RAD * TURRET_TICKS_PER_RADIAN); // = 0
     }
 
     // ==================== ALLIANCE & GOAL ====================
@@ -298,10 +323,17 @@ public class TurretAiming {
     }
 
     /**
-     * Get current target angle (field-relative, radians)
+     * Get current target angle (field-relative, radians) — for telemetry
      */
     public double getTargetAngle() {
         return targetAngleFieldRelative;
+    }
+
+    /**
+     * Get current target angle (robot-relative, clamped, radians) — actual commanded angle
+     */
+    public double getTargetAngleRobotRelative() {
+        return targetAngleRobotRelative;
     }
 
     /**
@@ -326,29 +358,14 @@ public class TurretAiming {
     }
 
     /**
-     * Is target angle within safe limits?
+     * Is the target angle within the turret's physical limits?
+     * Checked in robot-relative frame (correct coordinate space for physical limits).
      */
     public boolean isTargetAngleSafe() {
-        return targetAngleFieldRelative >= TURRET_MIN_ANGLE_RAD &&
-                targetAngleFieldRelative <= TURRET_MAX_ANGLE_RAD;
+        return lastTargetWasSafe;
     }
 
     // ==================== UTILITY METHODS ====================
-
-    /**
-     * Clamp angle to turret physical limits
-     */
-    private double clampAngle(double angle) {
-        angle = normalizeAngle(angle);
-
-        if (angle < TURRET_MIN_ANGLE_RAD) {
-            return TURRET_MIN_ANGLE_RAD;
-        }
-        if (angle > TURRET_MAX_ANGLE_RAD) {
-            return TURRET_MAX_ANGLE_RAD;
-        }
-        return angle;
-    }
 
     /**
      * Normalize angle to [-π, π]
@@ -366,6 +383,7 @@ public class TurretAiming {
      */
     public String getStatusString() {
         if (!isActive) return "INACTIVE";
+        if (isGoingHome) return "GOING HOME";
         if (isAtTarget()) return "AT TARGET";
         return "MOVING";
     }
@@ -375,6 +393,7 @@ public class TurretAiming {
      */
     public String getControlMethodString() {
         if (!isActive) return "N/A";
+        if (isGoingHome) return "HOME";
         if (useLimelightCorrection) return "LIMELIGHT";
         return "ODOMETRY";
     }

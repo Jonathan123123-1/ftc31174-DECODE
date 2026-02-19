@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 import org.firstinspires.ftc.teamcode.shooterConstants.TurretAiming;
 
 /**
@@ -188,7 +188,7 @@ public class Step1_TurretTest extends LinearOpMode {
         }
 
         // Pinpoint odometry through Pedro Pathing
-        follower = Constants.createFollower(hardwareMap, telemetry);
+        follower = teleConstants.createFollower(hardwareMap, telemetry);
         follower.setStartingPose(new Pose(72, 72, 0));  // Set to your starting position
     }
 

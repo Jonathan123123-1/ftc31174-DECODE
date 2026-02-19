@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.Auto.Testing;
 
-import android.util.Size;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -65,7 +64,7 @@ public class Blue9Ball extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         
         // THE FIX: Use the global follower from Constants.java for autonomous consistency
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         
         // Use the specific starting pose for this Autonomous routine
         follower.setStartingPose(new Pose(33, 135, Math.toRadians(270)));

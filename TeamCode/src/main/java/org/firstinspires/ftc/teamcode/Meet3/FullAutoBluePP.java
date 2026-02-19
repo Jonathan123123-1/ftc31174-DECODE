@@ -80,7 +80,7 @@ public class FullAutoBluePP extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Hardware Mapping (THESE NAMES MUST MATCH YOUR CONFIGURATION)
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         turretMotor = hardwareMap.get(DcMotorEx.class, "turret_motor");
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooter_motor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake_motor");

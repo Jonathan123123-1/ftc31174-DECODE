@@ -13,8 +13,6 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import java.util.Timer;
-
 
 @Autonomous(name = "PATH Testing rn", group = "Autonomous")
 @Configurable // Panels
@@ -32,7 +30,7 @@ public class Blue12BallTeam extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(57, 8, Math.toRadians(90)));
 
         paths = new Paths(follower); // Build paths

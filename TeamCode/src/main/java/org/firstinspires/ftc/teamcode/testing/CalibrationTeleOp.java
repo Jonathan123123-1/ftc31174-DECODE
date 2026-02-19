@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 import org.firstinspires.ftc.teamcode.shooterConstants.GoalManager;
 
 /**
@@ -257,7 +257,7 @@ public class CalibrationTeleOp extends LinearOpMode {
 
         turretStopperServo.setPosition(TURRET_HOME);
 
-        follower = Constants.createFollower(hardwareMap, telemetry);
+        follower = teleConstants.createFollower(hardwareMap, telemetry);
         follower.setStartingPose(new Pose(72, 72, 0));
     }
 

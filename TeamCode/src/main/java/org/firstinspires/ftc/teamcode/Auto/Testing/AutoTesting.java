@@ -28,7 +28,7 @@ public class AutoTesting extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
 
         // ✅ FIXED: starting pose now matches first path start
         follower.setStartingPose(new Pose(34, 135, Math.toRadians(270)));

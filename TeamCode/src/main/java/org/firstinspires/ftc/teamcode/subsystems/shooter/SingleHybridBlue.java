@@ -124,7 +124,7 @@ public class SingleHybridBlue extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, "imu");
 
         // Initialize Pedro Pathing
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         // SET YOUR STARTING POSITION HERE
         follower.setStartingPose(new Pose(0, 0, Math.toRadians(180)));
 

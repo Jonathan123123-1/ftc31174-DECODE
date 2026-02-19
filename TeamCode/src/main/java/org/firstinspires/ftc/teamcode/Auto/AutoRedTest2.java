@@ -25,7 +25,7 @@ public class AutoRedTest2 extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
 
         // Robot starts here
         follower.setStartingPose(new Pose(120, 120, Math.toRadians(0)));

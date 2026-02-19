@@ -16,7 +16,7 @@ public class ExactPedroPath extends LinearOpMode {
     public void runOpMode() {
 
         // Create the follower
-        Follower follower = Constants.createFollower(hardwareMap,telemetry);
+        Follower follower = Constants.createFollower(hardwareMap);
 
         // Set starting pose
         Pose startPose = new Pose(22.704103671706264, 121.29589632829374, Math.toRadians(180));

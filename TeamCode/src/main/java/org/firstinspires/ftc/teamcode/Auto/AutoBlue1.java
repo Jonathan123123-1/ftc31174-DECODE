@@ -16,7 +16,7 @@ public class AutoBlue1 extends LinearOpMode {
     public void runOpMode() {
 
         // --- Initialize Pedro Pathing ---
-        Follower follower = Constants.createFollower(hardwareMap,telemetry);
+        Follower follower = Constants.createFollower(hardwareMap);
 
         // --- Define the Autonomous Path ---
         // A PathChain is built by adding sequential path segments.

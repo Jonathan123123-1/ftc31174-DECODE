@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.teleConstants;
 import org.firstinspires.ftc.teamcode.shooterConstants.distanceLocalization;
 
 @TeleOp(name = "Odometry Turret Lock (Blue)", group = "Turret")
@@ -48,7 +48,7 @@ public class odometryTurretLocalization extends OpMode {
         imu = hardwareMap.get(IMU.class, "imu");
 
         // Odometry
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = teleConstants.createFollower(hardwareMap,telemetry);
         follower.setStartingPose(new Pose(0,0,0));
 
         // Turret

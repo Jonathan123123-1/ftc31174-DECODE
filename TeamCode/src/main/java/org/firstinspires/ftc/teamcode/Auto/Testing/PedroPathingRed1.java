@@ -24,7 +24,7 @@ public class PedroPathingRed1 extends OpMode {
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(110, 135, Math.toRadians(270)));
         paths = new Paths(follower);
         panelsTelemetry.debug("Status", "Initialized");

@@ -25,7 +25,7 @@ public class PedroAutonomous extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
 
         // Robot is physically placed here
         follower.setStartingPose(new Pose(23, 120, Math.toRadians(180)));

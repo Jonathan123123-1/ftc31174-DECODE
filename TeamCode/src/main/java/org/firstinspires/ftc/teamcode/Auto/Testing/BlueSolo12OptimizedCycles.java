@@ -92,7 +92,7 @@ public class BlueSolo12OptimizedCycles extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize follower
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(33, 134.5, Math.toRadians(270)));
 
         // Initialize mechanism hardware

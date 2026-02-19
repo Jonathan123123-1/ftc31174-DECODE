@@ -24,7 +24,7 @@ public class BlueAlliance15 extends OpMode {
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         // Set starting pose based on the start of Path 1
         follower.setStartingPose(new Pose(33.000, 135.000, Math.toRadians(270)));
 

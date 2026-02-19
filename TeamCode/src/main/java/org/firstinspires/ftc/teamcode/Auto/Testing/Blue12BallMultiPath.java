@@ -87,7 +87,7 @@ public class Blue12BallMultiPath extends OpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // Initialize follower
-        follower = Constants.createFollower(hardwareMap,telemetry);
+        follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(57, 8, Math.toRadians(90)));
 
         // Initialize mechanism hardware
