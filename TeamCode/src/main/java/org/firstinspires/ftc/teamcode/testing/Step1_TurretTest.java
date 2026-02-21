@@ -263,8 +263,8 @@ public class Step1_TurretTest extends LinearOpMode {
         telemetry.addData("Current Ticks", turretAiming.getCurrentTicks());
         telemetry.addData("Target Ticks", turretAiming.getTargetTicks());
         telemetry.addData("Error", turretAiming.getError());
-        telemetry.addData("Target Angle", "%.1f°",
-                Math.toDegrees(turretAiming.getTargetAngle()));
+        telemetry.addData("Target Angle", "%.1f°", Math.toDegrees(turretAiming.getTargetAngle()));
+        telemetry.addData("Current Angle", "%.1f°", Math.toDegrees(turretAiming.getCurrentAngle()));
         telemetry.addLine();
 
         // Robot Position

@@ -18,7 +18,7 @@ public class Dual_TestBlue extends LinearOpMode {
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private IMU imu;
 
-    private double maxSpeed = 0.95;
+    private double maxSpeed = 0.93;
     private boolean fieldOriented = false;
     private boolean lastFieldToggle = false;
 
@@ -149,7 +149,7 @@ public class Dual_TestBlue extends LinearOpMode {
             lastFieldToggle = fieldToggle;
 
             if (gamepad1.a) maxSpeed = 0.6;
-            if (gamepad1.b) maxSpeed = 0.95;
+            if (gamepad1.b) maxSpeed = 0.93;
 
             double forward = -gamepad1.left_stick_y;
             double right = gamepad1.left_stick_x;

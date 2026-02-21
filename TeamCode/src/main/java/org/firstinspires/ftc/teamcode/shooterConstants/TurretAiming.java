@@ -39,10 +39,10 @@ public class TurretAiming {
     // TODO: MEASURE AND SET THESE BASED ON YOUR PHYSICAL LIMITS!
 
     /** Minimum turret angle (radians) - robot-relative, can't go further counter-clockwise */
-    private static final double TURRET_MIN_ANGLE_RAD = Math.toRadians(-135);
+    private static final double TURRET_MIN_ANGLE_RAD = Math.toRadians(-125);
 
     /** Maximum turret angle (radians) - robot-relative, can't go further clockwise */
-    private static final double TURRET_MAX_ANGLE_RAD = Math.toRadians(135);
+    private static final double TURRET_MAX_ANGLE_RAD = Math.toRadians(90);
 
     /** Turret home position (radians, typically 0 = straight forward) */
     private static final double TURRET_HOME_ANGLE_RAD = 0.0;
@@ -53,18 +53,18 @@ public class TurretAiming {
     // Count encoder ticks, then: TICKS_PER_RADIAN = ticks / (π/2)
 
     /** How many encoder ticks per radian of turret rotation */
-    private static final double TURRET_TICKS_PER_RADIAN = 427.8880645026;
+    private static final double TURRET_TICKS_PER_RADIAN = 427.8880645026 / (90/53.8);
 
     // ==================== CONTROL CONSTANTS ====================
 
     /** Power when moving turret to target */
-    private static final double TURRET_MOVE_POWER = 0.6;
+    private static final double TURRET_MOVE_P = 0.003;
 
     /** Minimum power to hold position (prevent drift) */
     private static final double TURRET_HOLD_POWER = 0.05;
 
     /** Proportional gain for position holding */
-    private static final double TURRET_HOLD_KP = 0.02;
+    private static final double TURRET_HOLD_KP = 0.002;
 
     /** How close to target counts as "at target" (ticks) */
     private static final int TURRET_TOLERANCE_TICKS = 10;
@@ -175,15 +175,11 @@ public class TurretAiming {
             turretMotor.setPower(holdPower);
             return;
         }
-
+        
         // Not at target - move toward it
-        double power = TURRET_MOVE_POWER;
+        double power = TURRET_MOVE_P * Math.abs(error) + LIMELIGHT_MIN_POWER;
 
-        // Slow down as we approach target (proportional control)
-        if (Math.abs(error) < 100) {
-            power = 0.3 + (Math.abs(error) / 100.0) * (TURRET_MOVE_POWER - 0.3);
-        }
-
+        
         // Apply power in correct direction
         turretMotor.setPower(error > 0 ? power : -power);
     }
@@ -334,6 +330,13 @@ public class TurretAiming {
      */
     public double getTargetAngleRobotRelative() {
         return targetAngleRobotRelative;
+    }
+
+    /**
+     * Get current turret angle (robot-relative, radians) from encoder ticks
+     */
+    public double getCurrentAngle() {
+        return getCurrentTicks() / TURRET_TICKS_PER_RADIAN;
     }
 
     /**
